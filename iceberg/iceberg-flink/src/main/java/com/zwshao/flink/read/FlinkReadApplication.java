@@ -9,6 +9,7 @@ import org.apache.flink.types.Row;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.DistributionMode;
 import org.apache.iceberg.Schema;
+
 import org.apache.iceberg.flink.FlinkSchemaUtil;
 import org.apache.iceberg.flink.TableLoader;
 import org.apache.iceberg.flink.sink.FlinkSink;

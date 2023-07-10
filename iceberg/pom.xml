@@ -18,6 +18,16 @@
         <module>iceberg-spark</module>
         <module>iceberg-flink</module>
     </modules>
-
-
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.iceberg</groupId>
+            <artifactId>iceberg-flink</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.iceberg</groupId>
+            <artifactId>iceberg-flink-runtime</artifactId>
+            <version>0.12.1</version>
+        </dependency>
+    </dependencies>
 </project>

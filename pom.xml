@@ -11,4 +11,8 @@
         <module>iceberg</module>
         <module>hudi</module>
     </modules>
+
+    <properties>
+        <scala.version>2.12.14</scala.version>
+    </properties>
 </project>
