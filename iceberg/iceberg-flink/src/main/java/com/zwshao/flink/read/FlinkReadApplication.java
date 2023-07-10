@@ -5,6 +5,7 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSink;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.data.RowData;
+import org.apache.flink.table.data.util.DataFormatConverters;
 import org.apache.flink.types.Row;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.DistributionMode;
@@ -19,6 +20,9 @@ import java.util.Map;
 
 public class FlinkReadApplication {
     public static void main(String[] args) throws Exception {
+
+        String property = System.getProperty("java.class.path");
+        System.out.println(property);
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
         env.enableCheckpointing(1000);
@@ -36,13 +40,12 @@ public class FlinkReadApplication {
                 });
 
         Configuration hadoopConf = new Configuration();
-        TableLoader tableLoader = TableLoader.fromHadoopTable("hdfs://nn:8020/warehouse/path", hadoopConf);
+        TableLoader tableLoader = TableLoader.fromHadoopTable("hdfs://localhost:9000/warehouse/path", hadoopConf);
 
         Schema schema = new Schema(
                 Types.NestedField.required(1, "character", Types.StringType.get()),
                 Types.NestedField.required(2, "location", Types.StringType.get()),
                 Types.NestedField.required(3, "event_time", Types.TimestampType.withZone()));
-
         DataStreamSink<RowData> sink = FlinkSink.forRow(stream, FlinkSchemaUtil.toSchema(schema))
                 .tableLoader(tableLoader)
                 .distributionMode(DistributionMode.HASH)
