@@ -38,7 +38,7 @@ public class FlinkReadApplication {
                     return row;
                 });
 
-//        stream.print();
+        stream.print();
 
         Schema schema = new Schema(Lists.newArrayList(Types.NestedField.required(1, "character", Types.StringType.get()),
                 Types.NestedField.required(2, "location", Types.StringType.get()),
@@ -48,7 +48,10 @@ public class FlinkReadApplication {
         PartitionSpec spec = PartitionSpec.builderFor(schema).identity("character").build();
 
         Map<String, String> props =
-                ImmutableMap.of(TableProperties.DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name());
+                ImmutableMap.of(
+                        TableProperties.DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name(),
+                        TableProperties.UPSERT_ENABLED, "true"
+                        );
         Configuration hadoopConf = new Configuration();
 
         HadoopCatalog catalog = new HadoopCatalog(hadoopConf, "hdfs://localhost:9000/srv/iceberg");
