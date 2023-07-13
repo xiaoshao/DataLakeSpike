@@ -19,7 +19,7 @@ import org.apache.iceberg.types.Types;
 
 import java.util.*;
 
-public class FlinkReadApplication {
+public class FlinkWriteApplication {
     public static void main(String[] args) throws Exception {
         org.apache.flink.configuration.Configuration configuration = new org.apache.flink.configuration.Configuration();
         configuration.setInteger(RestOptions.PORT, 8082);
@@ -54,7 +54,7 @@ public class FlinkReadApplication {
                         );
         Configuration hadoopConf = new Configuration();
 
-        HadoopCatalog catalog = new HadoopCatalog(hadoopConf, "hdfs://localhost:9000/srv/iceberg");
+        HadoopCatalog catalog = new HadoopCatalog(hadoopConf, "/Users/shaozengwei/project/iceberg_data");
         TableIdentifier tableName = TableIdentifier.of("zw", "second_iceberg");
 
         Table table = null;
@@ -64,7 +64,7 @@ public class FlinkReadApplication {
             table = catalog.loadTable(tableName);
         }
 
-        TableLoader tableLoader = TableLoader.fromHadoopTable("hdfs://localhost:9000/srv/iceberg/zw/second_iceberg", hadoopConf);
+        TableLoader tableLoader = TableLoader.fromHadoopTable("/Users/shaozengwei/project/iceberg_data/zw/second_iceberg", hadoopConf);
 
         FlinkSink.forRowData(stream)
                 .table(table)

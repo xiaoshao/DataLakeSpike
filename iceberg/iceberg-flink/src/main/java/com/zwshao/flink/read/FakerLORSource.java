@@ -1,9 +1,6 @@
 package com.zwshao.flink.read;
 
-import org.apache.commons.net.ntp.TimeStamp;
 import org.apache.flink.streaming.api.functions.source.ParallelSourceFunction;
-import org.apache.flink.streaming.api.functions.source.SourceFunction;
-import org.apache.flink.streaming.api.watermark.Watermark;
 
 import java.util.HashMap;
 import java.util.Map;
