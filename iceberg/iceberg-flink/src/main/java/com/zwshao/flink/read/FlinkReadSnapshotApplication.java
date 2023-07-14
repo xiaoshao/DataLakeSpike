@@ -8,6 +8,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.flink.TableLoader;
 import org.apache.iceberg.flink.source.FlinkSource;
 
+import static com.zwshao.flink.FlinkConst.ICEBERG_LOCATION;
+import static com.zwshao.flink.FlinkConst.ICEBERG_TABLE_LOCATION;
+
 public class FlinkReadSnapshotApplication {
 
     public static void main(String[] args) throws Exception {
@@ -16,9 +19,10 @@ public class FlinkReadSnapshotApplication {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment(configuration);
 
         env.enableCheckpointing(1000);
-        
+
         Configuration hadoopConf = new Configuration();
-        TableLoader tableLoader = TableLoader.fromHadoopTable("/Users/shaozengwei/project/iceberg_data/zw/second_iceberg", hadoopConf);
+
+        TableLoader tableLoader = TableLoader.fromHadoopTable(ICEBERG_TABLE_LOCATION, hadoopConf);
 
         DataStream<RowData> batch = FlinkSource.forRowData()
                 .env(env)

@@ -1,8 +1,10 @@
-package com.zwshao.flink.read;
+package com.zwshao.flink.write;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.zwshao.flink.FlinkConst;
+import com.zwshao.flink.read.FakerLORSource;
 import org.apache.flink.configuration.RestOptions;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -38,8 +40,6 @@ public class FlinkWriteApplication {
                     return row;
                 });
 
-        stream.print();
-
         Schema schema = new Schema(Lists.newArrayList(Types.NestedField.required(1, "character", Types.StringType.get()),
                 Types.NestedField.required(2, "location", Types.StringType.get()),
                 Types.NestedField.required(3, "event_time", Types.StringType.get())),
@@ -51,11 +51,11 @@ public class FlinkWriteApplication {
                 ImmutableMap.of(
                         TableProperties.DEFAULT_FILE_FORMAT, FileFormat.PARQUET.name(),
                         TableProperties.UPSERT_ENABLED, "true"
-                        );
+                );
         Configuration hadoopConf = new Configuration();
 
-        HadoopCatalog catalog = new HadoopCatalog(hadoopConf, "/Users/shaozengwei/project/iceberg_data");
-        TableIdentifier tableName = TableIdentifier.of("zw", "second_iceberg");
+        HadoopCatalog catalog = new HadoopCatalog(hadoopConf, FlinkConst.ICEBERG_LOCATION);
+        TableIdentifier tableName = TableIdentifier.of(FlinkConst.ICEBERG_CATALOG, FlinkConst.ICEBERG_TABLE);
 
         Table table = null;
         if (!catalog.tableExists(tableName)) {
@@ -64,7 +64,7 @@ public class FlinkWriteApplication {
             table = catalog.loadTable(tableName);
         }
 
-        TableLoader tableLoader = TableLoader.fromHadoopTable("/Users/shaozengwei/project/iceberg_data/zw/second_iceberg", hadoopConf);
+        TableLoader tableLoader = TableLoader.fromHadoopTable(FlinkConst.ICEBERG_TABLE_LOCATION, hadoopConf);
 
         FlinkSink.forRowData(stream)
                 .table(table)
