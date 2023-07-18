@@ -10,6 +10,7 @@
     <modules>
         <module>iceberg</module>
         <module>hudi</module>
+        <module>generate_data</module>
     </modules>
 
     <properties>
