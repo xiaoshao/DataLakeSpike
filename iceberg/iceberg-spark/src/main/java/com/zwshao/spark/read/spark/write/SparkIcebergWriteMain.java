@@ -1,7 +1,6 @@
-package com.zwshao.spark.write;
+package com.zwshao.spark.read.spark.write;
 
-import com.zwshao.spark.utils.SparkUtils;
-import org.apache.iceberg.spark.SparkUtil;
+import com.zwshao.spark.read.spark.utils.SparkUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;

@@ -1,6 +1,6 @@
-package com.zwshao.spark.read;
+package com.zwshao.spark.read.spark.read;
 
-import com.zwshao.spark.utils.SparkUtils;
+import com.zwshao.spark.read.spark.utils.SparkUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;

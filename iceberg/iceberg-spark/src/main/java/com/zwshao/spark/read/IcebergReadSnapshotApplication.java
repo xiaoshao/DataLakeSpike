@@ -1,5 +1,6 @@
-package com.zwshao.iceberg;
+package com.zwshao.spark.read;
 
+import com.zwshao.spark.read.iceberg.IcebergTableOperation;
 import org.apache.iceberg.CombinedScanTask;
 import org.apache.iceberg.PartitionSpec;
 import org.apache.iceberg.Schema;
@@ -12,7 +13,7 @@ import org.apache.iceberg.types.Types;
 
 import java.util.List;
 
-public class IcebergMain {
+public class IcebergReadSnapshotApplication {
     public static void main(String[] args) {
         IcebergTableOperation operation = new IcebergTableOperation();
 

@@ -1,4 +1,4 @@
-package com.zwshao.spark.utils;
+package com.zwshao.spark.read.spark.utils;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.sql.SparkSession;
