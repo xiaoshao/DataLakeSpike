@@ -17,5 +17,6 @@
     <modules>
         <module>iceberg-spark</module>
         <module>iceberg-flink</module>
+        <module>iceberg-sdk</module>
     </modules>
 </project>
