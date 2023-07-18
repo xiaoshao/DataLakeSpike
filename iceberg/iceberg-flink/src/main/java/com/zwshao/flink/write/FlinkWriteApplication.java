@@ -69,7 +69,6 @@ public class FlinkWriteApplication {
         FlinkSink.forRowData(stream)
                 .table(table)
                 .tableLoader(tableLoader)
-//                .distributionMode(DistributionMode.HASH)
                 .overwrite(false)
                 .writeParallelism(1).upsert(true).append();
 
