@@ -10,7 +10,7 @@
     <modules>
         <module>iceberg</module>
         <module>hudi</module>
-        <module>generate_data</module>
+        <module>extension</module>
     </modules>
 
     <properties>
