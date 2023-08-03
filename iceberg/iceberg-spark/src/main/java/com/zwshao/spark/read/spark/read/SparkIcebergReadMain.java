@@ -11,10 +11,10 @@ public class SparkIcebergReadMain {
 
         SparkConf conf = SparkUtils.createIcebergConf();
 
-        SparkSession session = SparkUtils.createLocalSession(conf, "local_app");
+        SparkSession session = SparkUtils.createLocalSession(conf, "read_iceberg");
 
-        Dataset<Row> iceberg = session.sql("SELECT * FROM iceberg.zw.first_iceberg");
+        Dataset<Row> iceberg = session.read().format("iceberg").load("zwshao.iceberg");
 
-        iceberg.write().format("console").save();
+        iceberg.show();
     }
 }

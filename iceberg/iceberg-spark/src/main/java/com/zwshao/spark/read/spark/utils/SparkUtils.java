@@ -19,9 +19,9 @@ public class SparkUtils {
 
     public static SparkConf createIcebergConf() {
         SparkConf conf = new SparkConf();
-        conf.set("spark.sql.catalog.iceberg", "org.apache.iceberg.spark.SparkCatalog");
-        conf.set("spark.sql.catalog.iceberg.type", "hadoop");
-        conf.set("spark.sql.catalog.iceberg.warehouse", "hdfs://localhost:9000/srv/iceberg");
+        conf.set("spark.sql.catalog.zwshao", "org.apache.iceberg.spark.SparkCatalog");
+        conf.set("spark.sql.catalog.zwshao.type", "hadoop");
+        conf.set("spark.sql.catalog.zwshao.warehouse", "hdfs://localhost:9000/srv/iceberg");
         return conf;
     }
 

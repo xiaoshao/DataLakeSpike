@@ -33,6 +33,11 @@
             <version>${spark.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-catalyst_2.12</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.iceberg</groupId>
             <artifactId>iceberg-spark-runtime-3.2_2.12</artifactId>
             <version>1.3.0</version>
