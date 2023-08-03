@@ -4,6 +4,7 @@ import com.zwshao.spark.read.spark.utils.SparkUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
 
 public class IcebergUpdateApplication {
@@ -16,7 +17,7 @@ public class IcebergUpdateApplication {
 
         Dataset<Row> originData = sparkSession.read().format("csv").schema(SparkUtils.createSchema()).load(updateDataPath);
 
-        sparkSession.sql("create table if not exists zwshao.store_sales(           " +
+        sparkSession.sql("create table if not exists " + SparkUtils.CATALOG_TABLE + "(" +
                 "                ss_sold_date_sk           integer                       ," +
                 "                ss_sold_time_sk           integer                       ," +
                 "                ss_item_sk                integer               not null," +
@@ -46,6 +47,7 @@ public class IcebergUpdateApplication {
         originData
                 .write()
                 .format("iceberg")
-                .save("zwshao.iceberg_table");
+                .mode(SaveMode.Overwrite)
+                .save(SparkUtils.MOR_ICEBERG_TABLE_NAME);
     }
 }

@@ -18,7 +18,7 @@ public class IcebergWriteApplication {
 
         Dataset<Row> originData = sparkSession.read().format("csv").schema(SparkUtils.createSchema()).load(originDataPath);
 
-        sparkSession.sql("create table if not exists zwshao.store_sales(           " +
+        sparkSession.sql("create table if not exists " + SparkUtils.CATALOG_NAME + ".store_sales(           " +
                 "                ss_sold_date_sk           integer                       ," +
                 "                ss_sold_time_sk           integer                       ," +
                 "                ss_item_sk                integer               not null," +
@@ -45,6 +45,6 @@ public class IcebergWriteApplication {
                 "                primary key (ss_item_sk, ss_ticket_number)" +
                 ") using iceberg");
 
-        originData.writeTo("zwshao.iceberg_table").createOrReplace();
+        originData.writeTo(SparkUtils.CATALOG_TABLE).createOrReplace();
     }
 }

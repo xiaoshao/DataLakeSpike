@@ -9,6 +9,11 @@ import org.apache.spark.sql.types.StructType;
 
 public class SparkUtils {
 
+    public static final String CATALOG_NAME = "zwshao";
+    public static final String MOR_ICEBERG_TABLE_NAME = "iceberg_mor";
+
+    public static final String CATALOG_TABLE = CATALOG_NAME + "." + MOR_ICEBERG_TABLE_NAME;
+
     public static SparkSession createLocalSession(SparkConf conf, String app) {
         return SparkSession.builder()
                 .config(conf)
@@ -19,9 +24,9 @@ public class SparkUtils {
 
     public static SparkConf createIcebergConf() {
         SparkConf conf = new SparkConf();
-        conf.set("spark.sql.catalog.zwshao", "org.apache.iceberg.spark.SparkCatalog");
-        conf.set("spark.sql.catalog.zwshao.type", "hadoop");
-        conf.set("spark.sql.catalog.zwshao.warehouse", "hdfs://localhost:9000/srv/iceberg");
+        conf.set("spark.sql.catalog." + CATALOG_NAME, "org.apache.iceberg.spark.SparkCatalog");
+        conf.set("spark.sql.catalog." + CATALOG_NAME + ".type", "hadoop");
+        conf.set("spark.sql.catalog." + CATALOG_NAME + ".warehouse", "hdfs://localhost:9000/srv/iceberg");
         return conf;
     }
 
