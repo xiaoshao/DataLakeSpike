@@ -8,6 +8,8 @@ import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.StructType;
 
 import static com.zwshao.spark.utils.SparkUtils.createTablePath;
+import static org.apache.hudi.keygen.constant.KeyGeneratorOptions.PARTITIONPATH_FIELD_NAME;
+import static org.apache.hudi.keygen.constant.KeyGeneratorOptions.RECORDKEY_FIELD_NAME;
 
 public class HudiWriteApplication {
     public static void main(String[] args) {
@@ -15,10 +17,13 @@ public class HudiWriteApplication {
 
         SparkSession session = SparkUtils.createSparkSession("hudi_write_origin");
 
-        Dataset<Row> hudi = session.read().format("csv").schema(SparkUtils.createSchema()).load(originDataPath);
+        Dataset<Row> hudi = session.read().format("csv").option("delimiter", "|").schema(SparkUtils.createSchema()).load(originDataPath);
 
-        session.sql(createTablePath);
-
-        hudi.write().format("hudi").mode(SaveMode.Append).save(SparkUtils.CATALOG_TABLE);
+        hudi.filter("ss_sold_date_sk is not null and ts is not null").write().format("hudi")
+                .option("hoodie.table.name", SparkUtils.CATALOG_TABLE)
+                .option(RECORDKEY_FIELD_NAME.key(), "ss_sold_date_sk")
+                .option(PARTITIONPATH_FIELD_NAME.key(), "ss_sold_date_sk")
+                .mode(SaveMode.Overwrite)
+                .save("/Users/shaozengwei/projects/data/hudi/hudi_table");
     }
 }

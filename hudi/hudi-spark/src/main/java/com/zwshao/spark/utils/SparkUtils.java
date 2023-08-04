@@ -14,7 +14,7 @@ public class SparkUtils {
 
     public static final String CATALOG_TABLE = CATALOG_NAME + "." + MOR_HUDI_TABLE_NAME;
 
-    public static String createTablePath = "create table if not exists " + SparkUtils.CATALOG_NAME + ".store_sales(           " +
+    public static String createTablePath = "create table if not exists " + SparkUtils.CATALOG_TABLE + "(           " +
             "                ss_sold_date_sk           integer                       ," +
             "                ss_sold_time_sk           integer                       ," +
             "                ss_item_sk                integer               not null," +
@@ -37,11 +37,10 @@ public class SparkUtils {
             "                ss_coupon_amt             decimal(7,2)                  ," +
             "                ss_net_paid               decimal(7,2)                  ," +
             "                ss_net_paid_inc_tax       decimal(7,2)                  ," +
-            "                ss_net_profit             decimal(7,2)                  ," +
-            "                primary key (ss_item_sk, ss_ticket_number)" +
-            ")+  using hudi " +
+            "                ss_net_profit             decimal(7,2)                  " +
+            ") using hudi " +
             "tblproperties ( " +
-            "  type = 'mor', " +
+            "  type = 'mor' " +
 //                "  primaryKey = 'id' " +
 //                "  ,preCombineField = 'ts' " +
             ")";
@@ -51,7 +50,7 @@ public class SparkUtils {
         conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
         conf.set("spark.sql.extensions", "org.apache.spark.sql.hudi.HoodieSparkSessionExtension");
         conf.set("spark.sql.catalog." + CATALOG_NAME, "org.apache.spark.sql.hudi.catalog.HoodieCatalog");
-        conf.set("spark.sql.catalog." + CATALOG_NAME + ".warehouse", "hdfs://localhost:9000/srv/hudi");
+//        conf.set("spark.sql.catalog." + CATALOG_NAME + ".warehouse", "hdfs://localhost:9000/srv/hudi");
         return SparkSession.builder().config(conf).master("local[*]").getOrCreate();
     }
 
@@ -86,7 +85,7 @@ public class SparkUtils {
 //);
         StructType schema = new StructType(new StructField[]{
                 new StructField("ss_sold_date_sk", DataTypes.IntegerType, true, Metadata.empty()),
-                new StructField("ss_sold_time_sk", DataTypes.IntegerType, true, Metadata.empty()),
+                new StructField("ts", DataTypes.IntegerType, true, Metadata.empty()),
                 new StructField("ss_item_sk", DataTypes.IntegerType, true, Metadata.empty()),
                 new StructField("ss_customer_sk", DataTypes.IntegerType, true, Metadata.empty()),
                 new StructField("ss_cdemo_sk", DataTypes.IntegerType, true, Metadata.empty()),

@@ -17,7 +17,7 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spark.version>3.4.1</spark.version>
+        <spark.version>3.3.1</spark.version>
     </properties>
 
     <dependencies>
@@ -33,8 +33,8 @@
         </dependency>
         <dependency>
             <groupId>org.apache.hudi</groupId>
-            <artifactId>hudi-spark3_2.12</artifactId>
-            <version>0.11.1</version>
+            <artifactId>hudi-spark3.3-bundle_2.12</artifactId>
+            <version>0.13.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
