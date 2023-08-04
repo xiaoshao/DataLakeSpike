@@ -14,7 +14,7 @@ public class SparkUtils {
 
     public static final String CATALOG_TABLE = CATALOG_NAME + "." + MOR_ICEBERG_TABLE_NAME;
 
-    public static final String ICEBERG_CREATE_TABLE_SQL = "create table if not exists " + SparkUtils.CATALOG_NAME + ".store_sales(           " +
+    public static final String ICEBERG_CREATE_TABLE_SQL = "create table if not exists " + SparkUtils.CATALOG_TABLE + "( " +
             "                ss_sold_date_sk           integer                       ," +
             "                ss_sold_time_sk           integer                       ," +
             "                ss_item_sk                integer               not null," +
@@ -37,8 +37,7 @@ public class SparkUtils {
             "                ss_coupon_amt             decimal(7,2)                  ," +
             "                ss_net_paid               decimal(7,2)                  ," +
             "                ss_net_paid_inc_tax       decimal(7,2)                  ," +
-            "                ss_net_profit             decimal(7,2)                  ," +
-            "                primary key (ss_item_sk, ss_ticket_number)" +
+            "                ss_net_profit             decimal(7,2)                  " +
             ") using iceberg";
 
     public static SparkSession createLocalSession(SparkConf conf, String app) {
