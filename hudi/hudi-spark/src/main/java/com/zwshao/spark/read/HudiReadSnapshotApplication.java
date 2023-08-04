@@ -9,7 +9,7 @@ public class HudiReadSnapshotApplication {
     public static void main(String[] args) {
         SparkSession session = SparkUtils.createSparkSession("HudiReadIncrementApplication");
 
-        Dataset<Row> hudi = session.read().format("hudi").load("");
+        Dataset<Row> hudi = session.read().format("hudi").load(SparkUtils.CATALOG_TABLE);
 
         hudi.write().format("console").save();
     }

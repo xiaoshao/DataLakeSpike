@@ -3,16 +3,22 @@ package com.zwshao.spark.write;
 import com.zwshao.spark.utils.SparkUtils;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.StructType;
 
+import static com.zwshao.spark.utils.SparkUtils.createTablePath;
+
 public class HudiWriteApplication {
     public static void main(String[] args) {
+        String originDataPath = args[0];
 
-        SparkSession session = SparkUtils.createSparkSession("HudiWriteApplication");
+        SparkSession session = SparkUtils.createSparkSession("hudi_write_origin");
 
-        Dataset<Row> inputData = session.read().format("csv").schema(new StructType()).load("");
+        Dataset<Row> hudi = session.read().format("csv").schema(SparkUtils.createSchema()).load(originDataPath);
 
-        inputData.write().format("hudi").option("", "").save("");
+        session.sql(createTablePath);
+
+        hudi.write().format("hudi").mode(SaveMode.Append).save(SparkUtils.CATALOG_TABLE);
     }
 }
