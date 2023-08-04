@@ -22,6 +22,6 @@ public class IcebergUpdateApplication {
                 .write()
                 .format("iceberg")
                 .mode(SaveMode.Overwrite)
-                .save(SparkUtils.MOR_ICEBERG_TABLE_NAME);
+                .save(SparkUtils.CATALOG_TABLE);
     }
 }
