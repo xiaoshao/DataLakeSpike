@@ -18,7 +18,7 @@ import java.util.List;
 public class HudiSDKWriteApplication {
 
     public static void main(String[] args) throws IOException {
-        WriteSupport
+
         SDKConst.initCopyOnWriteHudiTable(new Configuration());
         HoodieWriteConfig config = HoodieWriteConfig.newBuilder()
                 .withPath(SDKConst.getCowHudiTablePath())
@@ -42,6 +42,7 @@ public class HudiSDKWriteApplication {
             while (next.size() > 0 && count++ < 3) {
                 client.insert(next, startCommitTime);
                 next = recordParse.next(1000);
+                startCommitTime = client.startCommit();
             }
         } finally {
             if (client != null) {
