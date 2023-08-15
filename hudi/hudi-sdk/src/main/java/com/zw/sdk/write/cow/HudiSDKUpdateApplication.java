@@ -1,4 +1,4 @@
-package com.zw.sdk.write;
+package com.zw.sdk.write.cow;
 
 import com.zw.sdk.utils.RecordParse;
 import com.zw.sdk.utils.SDKConst;
@@ -15,19 +15,9 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 
-public class HudiSDKWriteApplication {
-
+public class HudiSDKUpdateApplication {
     public static void main(String[] args) throws IOException {
-
-        SDKConst.initCopyOnWriteHudiTable(new Configuration());
-        HoodieWriteConfig config = HoodieWriteConfig.newBuilder()
-                .withPath(SDKConst.getCowHudiTablePath())
-                .withSchema(SDKConst.hudi_schema.toString(true))
-                .withParallelism(2, 2)
-                .forTable(SDKConst.cow_table_name)
-                .withIndexConfig(HoodieIndexConfig.newBuilder().withIndexType(HoodieIndex.IndexType.INMEMORY).build())
-                .withArchivalConfig(HoodieArchivalConfig.newBuilder().archiveCommitsWith(20, 30).build())
-                .build();
+        HoodieWriteConfig config = SDKConst.createHoodieWriteConfig();
 
         HoodieJavaWriteClient client = null;
         RecordParse recordParse = null;
@@ -40,7 +30,7 @@ public class HudiSDKWriteApplication {
             List<HoodieRecord> next = recordParse.next(1000);
             int count = 0;
             while (next.size() > 0 && count++ < 3) {
-                client.insert(next, startCommitTime);
+                client.upsert(next, startCommitTime);
                 next = recordParse.next(1000);
                 startCommitTime = client.startCommit();
             }

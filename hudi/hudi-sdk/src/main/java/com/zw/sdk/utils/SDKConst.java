@@ -1,25 +1,20 @@
 package com.zw.sdk.utils;
 
 import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericData;
-import org.apache.avro.generic.GenericRecord;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hudi.common.fs.FSUtils;
 import org.apache.hudi.common.model.*;
 import org.apache.hudi.common.table.HoodieTableMetaClient;
-import org.apache.hudi.common.util.Option;
-import org.apache.hudi.common.util.StringUtils;
+import org.apache.hudi.config.HoodieArchivalConfig;
+import org.apache.hudi.config.HoodieIndexConfig;
+import org.apache.hudi.config.HoodieWriteConfig;
+import org.apache.hudi.index.HoodieIndex;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 public class SDKConst {
     public static String catalog = "sdk_catalog";
@@ -28,9 +23,7 @@ public class SDKConst {
     public static String mor_table_name = "mor_sdk_table";
     private static final String COW = HoodieTableType.COPY_ON_WRITE.name();
     private static final String MOR = HoodieTableType.MERGE_ON_READ.name();
-    public static String location = "/Users/shaozengwei/projects/data/hudi";
-
-    public static String recordKeyFields = "ids";
+    public static String hudi_data_location = "/Users/shaozengwei/projects/data/hudi";
 
     public static Schema hudi_schema;
 
@@ -63,24 +56,24 @@ public class SDKConst {
     }
 
     public static String getCowHudiTablePath() {
-        return Paths.get(location, cow_table_name).toString();
+        return Paths.get(hudi_data_location, cow_table_name).toString();
     }
 
     public static String getMorHudiTablePath() {
-        return Paths.get(location, mor_table_name).toString();
+        return Paths.get(hudi_data_location, mor_table_name).toString();
     }
 
 
-    public static FileSystem createFileSystem(Configuration configuration) {
-        return FSUtils.getFs(location, configuration);
+    private static FileSystem createFileSystem(Configuration configuration) {
+        return FSUtils.getFs(hudi_data_location, configuration);
     }
 
     public static void initCopyOnWriteHudiTable(Configuration configuration) throws IOException {
         FileSystem fileSystem = createFileSystem(configuration);
 
-        Path cowHudiTablePath = new Path(location);
-        if (!fileSystem.exists(cowHudiTablePath)) {
-            fileSystem.mkdirs(cowHudiTablePath);
+        Path hudiDataPath = new Path(hudi_data_location);
+        if (!fileSystem.exists(hudiDataPath)) {
+            fileSystem.mkdirs(hudiDataPath);
         }
 
         HoodieTableMetaClient.withPropertyBuilder()
@@ -91,5 +84,30 @@ public class SDKConst {
     }
 
 
+    public static void initMORHudiTable(Configuration configuration) throws IOException {
+        FileSystem fileSystem = createFileSystem(configuration);
 
+        Path hudiDataPath = new Path(hudi_data_location);
+        if (!fileSystem.exists(hudiDataPath)) {
+            fileSystem.mkdirs(hudiDataPath);
+        }
+
+        HoodieTableMetaClient.withPropertyBuilder()
+                .setTableType(MOR)
+                .setTableName(mor_table_name)
+                .setPayloadClassName(HoodieAvroPayload.class.getName())
+                .initTable(new Configuration(), getCowHudiTablePath());
+    }
+
+
+    public static HoodieWriteConfig createHoodieWriteConfig() {
+        return HoodieWriteConfig.newBuilder()
+                .withPath(getCowHudiTablePath())
+                .withSchema(hudi_schema.toString(true))
+                .withParallelism(2, 2)
+                .forTable(cow_table_name)
+                .withIndexConfig(HoodieIndexConfig.newBuilder().withIndexType(HoodieIndex.IndexType.INMEMORY).build())
+                .withArchivalConfig(HoodieArchivalConfig.newBuilder().archiveCommitsWith(20, 30).build())
+                .build();
+    }
 }
