@@ -50,6 +50,8 @@ public class SparkUtils {
         conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
         conf.set("spark.sql.extensions", "org.apache.spark.sql.hudi.HoodieSparkSessionExtension");
         conf.set("spark.sql.catalog." + CATALOG_NAME, "org.apache.spark.sql.hudi.catalog.HoodieCatalog");
+        conf.set("spark.eventLog.enabled", "true");
+        conf.set("spark.eventLog.dir", "/Users/shaozengwei/projects/data/event_log");
 //        conf.set("spark.sql.catalog." + CATALOG_NAME + ".warehouse", "hdfs://localhost:9000/srv/hudi");
         return SparkSession.builder().config(conf).master("local[*]").getOrCreate();
     }

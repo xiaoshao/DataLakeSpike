@@ -1,19 +1,25 @@
 package com.zw.sdk.utils;
 
 import org.apache.avro.Schema;
-import org.apache.commons.io.FileUtils;
+import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hudi.common.fs.FSUtils;
-import org.apache.hudi.common.model.HoodieAvroPayload;
-import org.apache.hudi.common.model.HoodieTableType;
+import org.apache.hudi.common.model.*;
 import org.apache.hudi.common.table.HoodieTableMetaClient;
+import org.apache.hudi.common.util.Option;
+import org.apache.hudi.common.util.StringUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class SDKConst {
     public static String catalog = "sdk_catalog";
@@ -24,17 +30,38 @@ public class SDKConst {
     private static final String MOR = HoodieTableType.MERGE_ON_READ.name();
     public static String location = "/Users/shaozengwei/projects/data/hudi";
 
-
     public static String recordKeyFields = "ids";
 
     public static Schema hudi_schema;
 
     static {
         ArrayList<Schema.Field> fields = new ArrayList<>();
-        fields.add(new Schema.Field("id", Schema.create(Schema.Type.STRING), "desc", null));
-        fields.add(new Schema.Field("name", Schema.create(Schema.Type.STRING), "desc", null));
-        hudi_schema = Schema.createRecord(fields);
+        fields.add(new Schema.Field("ss_sold_date_sk", Schema.create(Schema.Type.INT), "desc", null));
+        fields.add(new Schema.Field("ss_sold_time_sk", Schema.create(Schema.Type.INT), "desc", null));
+        fields.add(new Schema.Field("ss_item_sk", Schema.create(Schema.Type.INT), "desc", null));
+        fields.add(new Schema.Field("ss_customer_sk", Schema.create(Schema.Type.INT), "desc", null));
+        fields.add(new Schema.Field("ss_cdemo_sk", Schema.create(Schema.Type.INT), "desc", null));
+        fields.add(new Schema.Field("ss_hdemo_sk", Schema.create(Schema.Type.INT), "desc", null));
+        fields.add(new Schema.Field("ss_addr_sk", Schema.create(Schema.Type.INT), "desc", null));
+        fields.add(new Schema.Field("ss_store_sk", Schema.create(Schema.Type.INT), "desc", null));
+        fields.add(new Schema.Field("ss_promo_sk", Schema.create(Schema.Type.INT), "desc", null));
+        fields.add(new Schema.Field("ss_ticket_number", Schema.create(Schema.Type.INT), "desc", null));
+        fields.add(new Schema.Field("ss_quantity", Schema.create(Schema.Type.INT), "desc", null));
+        fields.add(new Schema.Field("ss_wholesale_cost", Schema.create(Schema.Type.DOUBLE), "desc", null));
+        fields.add(new Schema.Field("ss_list_price", Schema.create(Schema.Type.DOUBLE), "desc", null));
+        fields.add(new Schema.Field("ss_sales_price", Schema.create(Schema.Type.DOUBLE), "desc", null));
+        fields.add(new Schema.Field("ss_ext_discount_amt", Schema.create(Schema.Type.DOUBLE), "desc", null));
+        fields.add(new Schema.Field("ss_ext_sales_price", Schema.create(Schema.Type.DOUBLE), "desc", null));
+        fields.add(new Schema.Field("ss_ext_wholesale_cost", Schema.create(Schema.Type.DOUBLE), "desc", null));
+        fields.add(new Schema.Field("ss_ext_list_price", Schema.create(Schema.Type.DOUBLE), "desc", null));
+        fields.add(new Schema.Field("ss_ext_tax", Schema.create(Schema.Type.DOUBLE), "desc", null));
+        fields.add(new Schema.Field("ss_coupon_amt", Schema.create(Schema.Type.DOUBLE), "desc", null));
+        fields.add(new Schema.Field("ss_net_paid", Schema.create(Schema.Type.DOUBLE), "desc", null));
+        fields.add(new Schema.Field("ss_net_paid_inc_tax", Schema.create(Schema.Type.DOUBLE), "desc", null));
+        fields.add(new Schema.Field("ss_net_profit", Schema.create(Schema.Type.DOUBLE), "desc", null));
+        hudi_schema = Schema.createRecord("hudi_name", "hudi_doc", "hudi_namespace", false,fields);
     }
+
     public static String getCowHudiTablePath() {
         return Paths.get(location, cow_table_name).toString();
     }
@@ -62,4 +89,7 @@ public class SDKConst {
                 .setPayloadClassName(HoodieAvroPayload.class.getName())
                 .initTable(new Configuration(), getCowHudiTablePath());
     }
+
+
+
 }

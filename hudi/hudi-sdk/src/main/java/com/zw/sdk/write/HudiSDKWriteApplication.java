@@ -1,5 +1,6 @@
 package com.zw.sdk.write;
 
+import com.zw.sdk.utils.RecordParse;
 import com.zw.sdk.utils.SDKConst;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hudi.client.HoodieJavaWriteClient;
@@ -10,12 +11,14 @@ import org.apache.hudi.config.HoodieIndexConfig;
 import org.apache.hudi.config.HoodieWriteConfig;
 import org.apache.hudi.index.HoodieIndex;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.nio.file.Paths;
+import java.util.List;
 
 public class HudiSDKWriteApplication {
+
     public static void main(String[] args) throws IOException {
+        WriteSupport
         SDKConst.initCopyOnWriteHudiTable(new Configuration());
         HoodieWriteConfig config = HoodieWriteConfig.newBuilder()
                 .withPath(SDKConst.getCowHudiTablePath())
@@ -25,18 +28,26 @@ public class HudiSDKWriteApplication {
                 .withIndexConfig(HoodieIndexConfig.newBuilder().withIndexType(HoodieIndex.IndexType.INMEMORY).build())
                 .withArchivalConfig(HoodieArchivalConfig.newBuilder().archiveCommitsWith(20, 30).build())
                 .build();
-        HoodieJavaWriteClient client = null;
-        try {
 
+        HoodieJavaWriteClient client = null;
+        RecordParse recordParse = null;
+
+        try {
             client = new HoodieJavaWriteClient(new HoodieJavaEngineContext(new Configuration()), config);
 
             String startCommitTime = client.startCommit();
-
-            client.insert(new ArrayList<HoodieRecord>(), startCommitTime);
+            recordParse = new RecordParse(Paths.get("/Users/shaozengwei/projects/data/store_sales/store_sales.dat"));
+            List<HoodieRecord> next = recordParse.next(1000);
+            int count = 0;
+            while (next.size() > 0 && count++ < 3) {
+                client.insert(next, startCommitTime);
+                next = recordParse.next(1000);
+            }
         } finally {
             if (client != null) {
                 client.close();
             }
+            recordParse.close();
         }
     }
 }
