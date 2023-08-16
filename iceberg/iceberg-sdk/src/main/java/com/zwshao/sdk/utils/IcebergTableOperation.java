@@ -1,4 +1,4 @@
-package com.zwshao.spark.read.iceberg;
+package com.zwshao.sdk.utils;
 
 import org.apache.commons.compress.utils.Lists;
 import org.apache.hadoop.conf.Configuration;
