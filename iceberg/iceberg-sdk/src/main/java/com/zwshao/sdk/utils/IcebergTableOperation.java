@@ -17,10 +17,9 @@ import java.util.List;
 public class IcebergTableOperation {
 
     private Catalog catalog;
-
+    private String warehousePath = "hdfs://localhost:9000/srv/iceberg";
     public IcebergTableOperation() {
         Configuration configuration = new Configuration();
-        String warehousePath = "hdfs://localhost:9000/srv/iceberg";
 
         this.catalog = new HadoopCatalog(configuration, warehousePath);
     }
@@ -41,7 +40,6 @@ public class IcebergTableOperation {
     }
 
     public CloseableIterable<CombinedScanTask> loadData(Table table, Predicate expression, String column1, String column2) {
-
         TableScan tableScan = table.newScan();
         TableScan scan = tableScan.filter(expression).select(column1, column2);
 
@@ -65,7 +63,7 @@ public class IcebergTableOperation {
     private boolean isTableExists(String namespace, String tableName) {
         TableIdentifier tableIdentifier = TableIdentifier.of(namespace, tableName);
         Configuration configuration = new Configuration();
-        String warehousePath = "hdfs://localhost:9000/srv/iceberg";
+
 
         HadoopCatalog catalog1 = new HadoopCatalog(configuration, warehousePath);
         Catalog catalog = catalog1;
