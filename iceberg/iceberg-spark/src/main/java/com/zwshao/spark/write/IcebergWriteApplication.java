@@ -18,7 +18,6 @@ public class IcebergWriteApplication {
 
         Dataset<Row> originData = sparkSession.read().format("csv").schema(SparkUtils.createSchema()).load(originDataPath);
 
-
         sparkSession.sql(ICEBERG_CREATE_TABLE_SQL);
 
         originData.writeTo(SparkUtils.CATALOG_TABLE).createOrReplace();
