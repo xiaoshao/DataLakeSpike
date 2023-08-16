@@ -13,7 +13,6 @@ import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static com.zw.sdk.utils.SDKConst.hudi_schema;
 
@@ -46,7 +45,7 @@ public class RecordParse {
         int count = 0;
         String line;
         while ((line = reader.readLine()) != null && count < number) {
-            HoodieRecord records = parse(line);
+            HoodieRecord records = parse4Update(line);
             if (records != null) {
                 result.add(records);
                 count++;
@@ -95,11 +94,20 @@ public class RecordParse {
         value.put("ss_net_paid_inc_tax", Double.valueOf(withDefault(items[21])));
         value.put("ss_net_profit", Double.valueOf(withDefault(items[22])));
 
-        HoodieKey key = new HoodieKey(UUID.randomUUID().toString(), "partitionPath");
+        HoodieKey key = buildHoodieKey(items);
 
         return new HoodieAvroRecord(key, new HoodieAvroPayload(Option.of(value)));
     }
 
+
+    private static HoodieKey buildHoodieKey(String[] items) {
+        StringBuilder sb = new StringBuilder();
+        for (int index = 0; index <= 8; index++) {
+            sb.append(items[index]).append(",");
+        }
+
+        return new HoodieKey(sb.toString(), "partitionPath");
+    }
 
     public HoodieRecord parse4Update(String csvLine) {
         GenericRecord value = new GenericData.Record(hudi_schema);
@@ -134,7 +142,7 @@ public class RecordParse {
         value.put("ss_net_paid_inc_tax", Double.valueOf(withDefault(items[21])));
         value.put("ss_net_profit", 10000.0);
 
-        HoodieKey key = new HoodieKey(UUID.randomUUID().toString(), "partitionPath");
+        HoodieKey key = buildHoodieKey(items);
 
         return new HoodieAvroRecord(key, new HoodieAvroPayload(Option.of(value)));
     }

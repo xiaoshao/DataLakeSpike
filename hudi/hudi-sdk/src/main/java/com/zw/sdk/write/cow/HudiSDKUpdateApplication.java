@@ -29,9 +29,9 @@ public class HudiSDKUpdateApplication {
             recordParse = new RecordParse(Paths.get("/Users/shaozengwei/projects/data/store_sales/store_sales.dat"));
             List<HoodieRecord> next = recordParse.next(1000);
             int count = 0;
-            while (next.size() > 0 && count++ < 3) {
+            while (next.size() > 0 && count++ < 30) {
                 client.upsert(next, startCommitTime);
-                next = recordParse.next(1000);
+                next = recordParse.next4Update(1000);
                 startCommitTime = client.startCommit();
             }
         } finally {

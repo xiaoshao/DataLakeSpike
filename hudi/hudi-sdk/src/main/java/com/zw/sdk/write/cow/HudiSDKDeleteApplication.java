@@ -24,11 +24,11 @@ public class HudiSDKDeleteApplication {
 
             String startCommitTime = client.startCommit();
             recordParse = new RecordParse(Paths.get("/Users/shaozengwei/projects/data/store_sales/store_sales.dat"));
-            List<HoodieRecord> next = recordParse.next(1000);
+            List<HoodieRecord> deleteRecords = recordParse.next4Update(1000);
             int count = 0;
-            while (next.size() > 0 && count++ < 3) {
-                client.delete(next, startCommitTime);
-                next = recordParse.next(1000);
+            while (deleteRecords.size() > 0 && count++ < 3) {
+                client.delete(deleteRecords, startCommitTime);
+                deleteRecords = recordParse.next(1000);
                 startCommitTime = client.startCommit();
             }
         } finally {
