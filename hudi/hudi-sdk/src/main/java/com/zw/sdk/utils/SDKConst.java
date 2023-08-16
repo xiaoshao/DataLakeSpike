@@ -96,18 +96,20 @@ public class SDKConst {
                 .setTableType(MOR)
                 .setTableName(mor_table_name)
                 .setPayloadClassName(HoodieAvroPayload.class.getName())
-                .initTable(new Configuration(), getCowHudiTablePath());
+                .initTable(new Configuration(), getMorHudiTablePath());
     }
 
 
-    public static HoodieWriteConfig createHoodieWriteConfig() {
+    public static HoodieWriteConfig createHoodieWriteConfig(String tableName) {
         return HoodieWriteConfig.newBuilder()
                 .withPath(getCowHudiTablePath())
                 .withSchema(hudi_schema.toString(true))
                 .withParallelism(2, 2)
-                .forTable(cow_table_name)
+                .forTable(tableName)
                 .withIndexConfig(HoodieIndexConfig.newBuilder().withIndexType(HoodieIndex.IndexType.INMEMORY).build())
                 .withArchivalConfig(HoodieArchivalConfig.newBuilder().archiveCommitsWith(20, 30).build())
                 .build();
     }
+
+
 }

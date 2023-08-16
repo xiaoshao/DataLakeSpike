@@ -1,4 +1,4 @@
-package com.zw.sdk.write.cow;
+package com.zw.sdk.write.mor;
 
 import com.zw.sdk.utils.RecordParse;
 import com.zw.sdk.utils.SDKConst;
@@ -15,8 +15,8 @@ import java.util.List;
 public class HudiSDKWriteApplication {
 
     public static void main(String[] args) throws IOException {
-        SDKConst.initCopyOnWriteHudiTable(new Configuration());
-        HoodieWriteConfig config = SDKConst.createHoodieWriteConfig(SDKConst.cow_table_name);
+        SDKConst.initMORHudiTable(new Configuration());
+        HoodieWriteConfig config = SDKConst.createHoodieWriteConfig(SDKConst.mor_table_name);
 
         HoodieJavaWriteClient client = null;
         RecordParse recordParse = null;

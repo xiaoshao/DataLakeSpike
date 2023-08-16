@@ -6,10 +6,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hudi.client.HoodieJavaWriteClient;
 import org.apache.hudi.client.common.HoodieJavaEngineContext;
 import org.apache.hudi.common.model.HoodieRecord;
-import org.apache.hudi.config.HoodieArchivalConfig;
-import org.apache.hudi.config.HoodieIndexConfig;
 import org.apache.hudi.config.HoodieWriteConfig;
-import org.apache.hudi.index.HoodieIndex;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -17,7 +14,7 @@ import java.util.List;
 
 public class HudiSDKUpdateApplication {
     public static void main(String[] args) throws IOException {
-        HoodieWriteConfig config = SDKConst.createHoodieWriteConfig();
+        HoodieWriteConfig config = SDKConst.createHoodieWriteConfig(SDKConst.cow_table_name);
 
         HoodieJavaWriteClient client = null;
         RecordParse recordParse = null;
