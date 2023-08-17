@@ -39,13 +39,13 @@ public class IcebergTableOperation {
         TableIdentifier tableIdentifier = TableIdentifier.of(namespace, tableName);
 
         if (isTableExists(namespace, tableName)) {
-            return this.loadCowTable(namespace, tableName);
+            return this.loadTable(namespace, tableName);
         } else {
             return catalog.createTable(tableIdentifier, schema, PartitionSpec.unpartitioned());
         }
     }
 
-    public Table loadCowTable(String namespace, String tableName) {
+    public Table loadTable(String namespace, String tableName) {
         return catalog.loadTable(TableIdentifier.of(namespace, tableName));
     }
 
@@ -88,9 +88,13 @@ public class IcebergTableOperation {
     }
 
     public void writeDataToCowTable(List<GenericRecord> records) throws IOException {
-        Table cowTable = loadCowTable(icebergNamespace, cowTableName);
-        String filepath = cowTable.location() + "/" + UUID.randomUUID().toString();
-        OutputFile file = cowTable.io().newOutputFile(filepath);
+        Table cowTable = loadTable(icebergNamespace, cowTableName);
+        writeData(records, cowTable);
+    }
+
+    private static void writeData(List<GenericRecord> records, Table table) throws IOException {
+        String filepath = table.location() + "/" + UUID.randomUUID().toString();
+        OutputFile file = table.io().newOutputFile(filepath);
 
         DataWriter<GenericRecord> dataWriter =
                 Parquet.writeData(file)
@@ -108,6 +112,11 @@ public class IcebergTableOperation {
             dataWriter.close();
         }
 
-        cowTable.newAppend().appendFile(dataWriter.toDataFile()).commit();
+        table.newAppend().appendFile(dataWriter.toDataFile()).commit();
+    }
+
+    public void writeDataToMorTable(List<GenericRecord> records) throws IOException {
+        Table cowTable = loadTable(icebergNamespace, morTableName);
+        writeData(records, cowTable);
     }
 }

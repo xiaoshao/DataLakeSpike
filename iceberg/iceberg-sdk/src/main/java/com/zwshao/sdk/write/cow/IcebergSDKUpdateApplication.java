@@ -15,7 +15,7 @@ public class IcebergSDKUpdateApplication {
 
         operation.createTable(icebergNamespace, cowTableName, schema);
 
-        Table firstIceberg = operation.loadCowTable(icebergNamespace, cowTableName);
+        Table firstIceberg = operation.loadTable(icebergNamespace, cowTableName);
 
         System.out.println(firstIceberg.location());
 
