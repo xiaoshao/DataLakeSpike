@@ -1,4 +1,4 @@
-package com.zwshao.sdk.read;
+package com.zwshao.sdk.write.cow;
 
 import com.zwshao.sdk.utils.IcebergTableOperation;
 import org.apache.iceberg.Table;
@@ -9,7 +9,7 @@ import java.util.List;
 
 import static com.zwshao.sdk.utils.IcebergConst.*;
 
-public class IcebergSDKReadSnapshotApplication {
+public class IcebergSDKUpdateApplication {
     public static void main(String[] args) {
         IcebergTableOperation operation = new IcebergTableOperation();
 

@@ -5,37 +5,47 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.*;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.TableIdentifier;
+import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.IcebergGenerics;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.data.parquet.GenericParquetWriter;
 import org.apache.iceberg.exceptions.NoSuchTableException;
 import org.apache.iceberg.expressions.Predicate;
 import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.io.CloseableIterable;
+import org.apache.iceberg.io.DataWriter;
+import org.apache.iceberg.io.OutputFile;
+import org.apache.iceberg.parquet.Parquet;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
+
+import static com.zwshao.sdk.utils.IcebergConst.*;
 
 public class IcebergTableOperation {
 
     private Catalog catalog;
-    private String warehousePath = "hdfs://localhost:9000/srv/iceberg";
+    private String warehousePath = "/Users/shaozengwei/projects/data/iceberg";
+
     public IcebergTableOperation() {
         Configuration configuration = new Configuration();
 
         this.catalog = new HadoopCatalog(configuration, warehousePath);
     }
 
-    public Table createTable(String namespace, String tableName, Schema schema, PartitionSpec partitionSpec) {
+    public Table createTable(String namespace, String tableName, Schema schema) {
 
         TableIdentifier tableIdentifier = TableIdentifier.of(namespace, tableName);
 
         if (isTableExists(namespace, tableName)) {
-            return this.loadTable(namespace, tableName);
+            return this.loadCowTable(namespace, tableName);
         } else {
-            return catalog.createTable(tableIdentifier, schema, partitionSpec);
+            return catalog.createTable(tableIdentifier, schema, PartitionSpec.unpartitioned());
         }
     }
 
-    public Table loadTable(String namespace, String tableName) {
+    public Table loadCowTable(String namespace, String tableName) {
         return catalog.loadTable(TableIdentifier.of(namespace, tableName));
     }
 
@@ -57,9 +67,10 @@ public class IcebergTableOperation {
     }
 
 
-    public void addData(Table table){
+    public void addData(Table table) {
 
     }
+
     private boolean isTableExists(String namespace, String tableName) {
         TableIdentifier tableIdentifier = TableIdentifier.of(namespace, tableName);
         Configuration configuration = new Configuration();
@@ -74,5 +85,29 @@ public class IcebergTableOperation {
         } catch (NoSuchTableException exception) {
             return false;
         }
+    }
+
+    public void writeDataToCowTable(List<GenericRecord> records) throws IOException {
+        Table cowTable = loadCowTable(icebergNamespace, cowTableName);
+        String filepath = cowTable.location() + "/" + UUID.randomUUID().toString();
+        OutputFile file = cowTable.io().newOutputFile(filepath);
+
+        DataWriter<GenericRecord> dataWriter =
+                Parquet.writeData(file)
+                        .schema(schema)
+                        .createWriterFunc(GenericParquetWriter::buildWriter)
+                        .overwrite()
+                        .withSpec(PartitionSpec.unpartitioned())
+                        .build();
+
+        try {
+            for (GenericRecord record : records) {
+                dataWriter.write(record);
+            }
+        } finally {
+            dataWriter.close();
+        }
+
+        cowTable.newAppend().appendFile(dataWriter.toDataFile()).commit();
     }
 }
