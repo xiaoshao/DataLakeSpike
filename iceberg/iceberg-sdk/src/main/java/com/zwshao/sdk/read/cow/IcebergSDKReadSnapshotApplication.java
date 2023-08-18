@@ -10,8 +10,11 @@ public class IcebergSDKReadSnapshotApplication {
 
         CloseableIterator<Record> recordsIterator = operation.listCowTableRecords();
 
+        int count = 0;
         while (recordsIterator.hasNext()){
             System.out.println(recordsIterator.next());
+            count ++;
         }
+        System.out.println("the total count is " + count);
     }
 }

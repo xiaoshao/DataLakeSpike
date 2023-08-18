@@ -1,28 +1,33 @@
 package com.zwshao.sdk.write.cow;
 
+import com.zwshao.sdk.utils.CSVRecordParse;
 import com.zwshao.sdk.utils.IcebergTableOperation;
-import org.apache.iceberg.Table;
-import org.apache.iceberg.data.Record;
-import org.apache.iceberg.expressions.Expressions;
+import org.apache.iceberg.data.GenericRecord;
 
+import java.io.IOException;
 import java.util.List;
 
-import static com.zwshao.sdk.utils.IcebergConst.*;
-
 public class IcebergSDKUpdateApplication {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         IcebergTableOperation operation = new IcebergTableOperation();
 
-        operation.createTable(icebergNamespace, cowTableName, schema);
+        CSVRecordParse csvRecordParse = null;
+        try {
+            csvRecordParse = new CSVRecordParse("/Users/shaozengwei/projects/data/input/store_sales.dat");
 
-        Table firstIceberg = operation.loadTable(icebergNamespace, cowTableName);
+            List<GenericRecord> records = csvRecordParse.nextUpdateBatch(1000);
 
-        System.out.println(firstIceberg.location());
+            int count = 0;
 
-        List<Record> records = operation.loadDataRecord(firstIceberg, Expressions.equal("level", "50"), "level", "event_time", "message_type");
-
-        for (Record record : records) {
-            System.out.println(record);
+            while (records.size() > 0 && count++ < 2) {
+                operation.updateCowRecords(records);
+                records = csvRecordParse.nextUpdateBatch(1000);
+            }
+        } finally {
+            if (csvRecordParse != null) {
+                csvRecordParse.close();
+            }
         }
+
     }
 }

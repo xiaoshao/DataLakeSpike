@@ -9,7 +9,10 @@ import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.IcebergGenerics;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.data.parquet.GenericParquetWriter;
+import org.apache.iceberg.deletes.PositionDelete;
+import org.apache.iceberg.deletes.PositionDeleteWriter;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.Predicate;
 import org.apache.iceberg.hadoop.HadoopCatalog;
 import org.apache.iceberg.io.CloseableIterable;
@@ -21,6 +24,7 @@ import org.apache.iceberg.types.Types;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 import static com.zwshao.sdk.utils.IcebergConst.*;
@@ -149,7 +153,12 @@ public class IcebergTableOperation {
     }
 
     private static void writeData(List<GenericRecord> records, Table table) throws IOException {
-        String filepath = table.location() + "/" + UUID.randomUUID().toString();
+        DataFile dataFile = writeDataFile(records, table);
+        table.newAppend().appendFile(dataFile).commit();
+    }
+
+    private static DataFile writeDataFile(List<GenericRecord> records, Table table) throws IOException {
+        String filepath = table.location() + "/" + UUID.randomUUID();
         OutputFile file = table.io().newOutputFile(filepath);
 
         DataWriter<GenericRecord> dataWriter =
@@ -168,7 +177,8 @@ public class IcebergTableOperation {
             dataWriter.close();
         }
 
-        table.newAppend().appendFile(dataWriter.toDataFile()).commit();
+        DataFile dataFile = dataWriter.toDataFile();
+        return dataFile;
     }
 
     public void writeDataToMorTable(List<GenericRecord> records) throws IOException {
@@ -177,4 +187,37 @@ public class IcebergTableOperation {
     }
 
 
+    public void updateCowRecords(List<GenericRecord> records) throws IOException {
+        Table cowTable = loadTable(icebergNamespace, cowTableName);
+        DataFile dataFile = writeDataFile(records, cowTable);
+        cowTable.newOverwrite().addFile(dataFile).commit();
+    }
+
+    public void deleteCowRecords(List<GenericRecord> records) {
+        Table cowTable = loadTable(icebergNamespace, cowTableName);
+        cowTable.newDelete().deleteFromRowFilter(Expressions.lessThan("ss_sold_date_sk", 245136300)).commit();
+    }
+
+    private void createCowDeleteFile(List<GenericRecord> records) throws IOException {
+        Table cowTable = loadTable(icebergNamespace, cowTableName);
+        String deletePath = cowTable.location() + "/delete/" + UUID.randomUUID();
+
+        OutputFile out = cowTable.io().newOutputFile(deletePath);
+
+        PositionDeleteWriter<Record> positionDeleteWriter = Parquet.writeDeletes(out)
+                .createWriterFunc(GenericParquetWriter::buildWriter)
+                .overwrite()
+                .rowSchema(cowTable.schema())
+                .withSpec(PartitionSpec.unpartitioned())
+                .buildPositionWriter();
+
+        PositionDelete<Record> positionDelete = PositionDelete.create();
+
+//        List<IcebergDeleteRecord>
+
+        positionDeleteWriter.close();
+        DeleteFile deleteFile = positionDeleteWriter.toDeleteFile();
+
+        cowTable.newRowDelta().addDeletes(deleteFile).commit();
+    }
 }

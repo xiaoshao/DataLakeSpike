@@ -19,12 +19,21 @@ public class IcebergSDKWriteApplication {
         operation.createTable(icebergNamespace, cowTableName, schema);
 
         System.out.println(operation.loadTable(icebergNamespace, cowTableName).location());
-        CSVRecordParse csvRecordParse = new CSVRecordParse("/Users/shaozengwei/projects/data/input/store_sales.dat");
-        List<GenericRecord> records = csvRecordParse.nextBatch(1000);
-        int count = 0;
+        CSVRecordParse csvRecordParse = null;
+        try {
+            csvRecordParse = new CSVRecordParse("/Users/shaozengwei/projects/data/input/store_sales.dat");
+            List<GenericRecord> records = csvRecordParse.nextBatch(1000);
+            int count = 0;
 
-        while (records.size() > 0 && count++ < 3) {
-            operation.writeDataToCowTable(records);
+            while (records.size() > 0 && count++ < 3) {
+                operation.writeDataToCowTable(records);
+                records = csvRecordParse.nextBatch(1000);
+            }
+        } finally {
+            if (csvRecordParse != null) {
+                csvRecordParse.close();
+            }
         }
+
     }
 }
