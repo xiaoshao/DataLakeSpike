@@ -84,7 +84,6 @@ public class IcebergTableOperation {
                     .build();
         }
 
-
         return Lists.newArrayList(records.iterator());
     }
 
