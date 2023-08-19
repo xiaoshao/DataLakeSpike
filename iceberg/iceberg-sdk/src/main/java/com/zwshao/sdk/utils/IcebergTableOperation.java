@@ -1,5 +1,8 @@
 package com.zwshao.sdk.utils;
 
+import com.google.common.collect.Iterables;
+import com.zwshao.sdk.write.bean.IcebergDeleteRecord;
+import org.apache.commons.compress.utils.Iterators;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.*;
@@ -8,10 +11,12 @@ import org.apache.iceberg.catalog.TableIdentifier;
 import org.apache.iceberg.data.GenericRecord;
 import org.apache.iceberg.data.IcebergGenerics;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.data.parquet.GenericParquetReaders;
 import org.apache.iceberg.data.parquet.GenericParquetWriter;
 import org.apache.iceberg.deletes.PositionDelete;
 import org.apache.iceberg.deletes.PositionDeleteWriter;
 import org.apache.iceberg.exceptions.NoSuchTableException;
+import org.apache.iceberg.expressions.Expression;
 import org.apache.iceberg.expressions.Expressions;
 import org.apache.iceberg.expressions.Predicate;
 import org.apache.iceberg.hadoop.HadoopCatalog;
@@ -23,9 +28,8 @@ import org.apache.iceberg.parquet.Parquet;
 import org.apache.iceberg.types.Types;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.LongStream;
 
 import static com.zwshao.sdk.utils.IcebergConst.*;
 
@@ -44,11 +48,13 @@ public class IcebergTableOperation {
 
         TableIdentifier tableIdentifier = TableIdentifier.of(namespace, tableName);
 
-        if (isTableExists(namespace, tableName)) {
-            return this.loadTable(namespace, tableName);
-        } else {
-            return catalog.createTable(tableIdentifier, schema, PartitionSpec.unpartitioned());
+        if (!isTableExists(namespace, tableName)) {
+            Map<String, String> tableProperties = new HashMap();
+            tableProperties.put(TableProperties.FORMAT_VERSION, "2");
+            Transaction transaction = catalog.newCreateTableTransaction(tableIdentifier, schema, PartitionSpec.unpartitioned(), tableProperties);
+            transaction.commitTransaction();
         }
+        return this.loadTable(namespace, tableName);
     }
 
     public Table loadTable(String namespace, String tableName) {
@@ -65,11 +71,21 @@ public class IcebergTableOperation {
         return scan.planTasks();
     }
 
-    public List<Record> loadDataRecord(Table table, Predicate filterExpression, String column1, String column2, String column3) {
+    public List<Record> loadDataRecord(Table table, Predicate filterExpression, String... columns) {
         IcebergGenerics.ScanBuilder read = IcebergGenerics.read(table);
-        CloseableIterable<Record> build = read.where(filterExpression).select(column1, column2, column3).build();
+        IcebergGenerics.ScanBuilder scaner = read.where(filterExpression);
+        CloseableIterable<Record> records;
+        if (columns.length == 0) {
+            records = scaner
+                    .build();
+        } else {
+            records = scaner
+                    .select(columns)
+                    .build();
+        }
 
-        return Lists.newArrayList(build.iterator());
+
+        return Lists.newArrayList(records.iterator());
     }
 
     public CloseableIterator<Record> listCowTableRecords() {
@@ -198,9 +214,9 @@ public class IcebergTableOperation {
         cowTable.newDelete().deleteFromRowFilter(Expressions.lessThan("ss_sold_date_sk", 245136300)).commit();
     }
 
-    private void createCowDeleteFile(List<GenericRecord> records) throws IOException {
+    public void deleteByExpression(Predicate deleteExpression) throws IOException {
         Table cowTable = loadTable(icebergNamespace, cowTableName);
-        String deletePath = cowTable.location() + "/delete/" + UUID.randomUUID();
+        String deletePath = cowTable.location() + "/" + UUID.randomUUID();
 
         OutputFile out = cowTable.io().newOutputFile(deletePath);
 
@@ -213,11 +229,67 @@ public class IcebergTableOperation {
 
         PositionDelete<Record> positionDelete = PositionDelete.create();
 
-//        List<IcebergDeleteRecord>
+        List<IcebergDeleteRecord> deleteRecords = getDeleteRecords(deleteExpression, cowTable);
+
+        deleteRecords.forEach(deleteRecord -> {
+            Record record = deleteRecord.getRecord();
+            Long position = deleteRecord.getPosition();
+            String dataFilePath = deleteRecord.getDataFile().path().toString();
+            positionDeleteWriter.write(positionDelete.set(dataFilePath, position, record));
+        });
 
         positionDeleteWriter.close();
         DeleteFile deleteFile = positionDeleteWriter.toDeleteFile();
 
         cowTable.newRowDelta().addDeletes(deleteFile).commit();
+    }
+
+    private List<IcebergDeleteRecord> getDeleteRecords(Predicate deleteExpression, Table cowTable) {
+        List<Record> deleteRecords = loadDataRecord(cowTable, deleteExpression);
+        TableScan scan = cowTable.newScan().filter(deleteExpression);
+
+        CloseableIterable<CombinedScanTask> result = scan.planTasks();
+
+        Iterable<FileScanTask> fileTasks = Iterables.concat(Iterables.transform(result, CombinedScanTask::files));
+
+        DataFile dataFile;
+
+        List<IcebergDeleteRecord> deleteResult = new ArrayList<>();
+
+        for (FileScanTask fileTask : fileTasks) {
+            dataFile = fileTask.file();
+
+            String s = dataFile.path().toString();
+            List<Record> records = readParquetDataFile(cowTable, s);
+
+            DataFile finalDataFile = dataFile;
+            for (int index = 0; index < records.size(); index++) {
+                if(deleteRecords.contains(records.get(index))){
+                    deleteResult.add(new IcebergDeleteRecord(records.get(index), finalDataFile, index));
+                }
+            }
+        }
+
+        return deleteResult;
+
+    }
+
+    private List<Record> readParquetDataFile(Table cowTable, String filePath) {
+        OutputFile outputFile = cowTable.io().newOutputFile(filePath);
+
+        Schema schema = cowTable.schema();
+
+        List<Record> records = null;
+
+        try (CloseableIterable<Record> build = Parquet.read(outputFile.toInputFile())
+                .project(schema)
+                .createReaderFunc(fileSchema -> GenericParquetReaders.buildReader(schema, fileSchema))
+                .build()) {
+
+            records = Lists.newArrayList(build.iterator());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return records;
     }
 }
