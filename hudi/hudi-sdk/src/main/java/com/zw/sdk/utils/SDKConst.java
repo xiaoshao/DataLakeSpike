@@ -113,7 +113,7 @@ public class SDKConst {
 
     public static HoodieWriteConfig createCowHoodieWriteConfig(String tableName) {
         return HoodieWriteConfig.newBuilder()
-                .withPath(getMorHudiTablePath())
+                .withPath(getCowHudiTablePath())
                 .withSchema(hudi_schema.toString(true))
                 .withParallelism(2, 2)
                 .forTable(tableName)
