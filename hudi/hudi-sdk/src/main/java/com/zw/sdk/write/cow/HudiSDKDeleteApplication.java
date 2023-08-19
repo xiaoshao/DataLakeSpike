@@ -14,7 +14,7 @@ import java.util.List;
 
 public class HudiSDKDeleteApplication {
     public static void main(String[] args) throws IOException {
-        HoodieWriteConfig config = SDKConst.createHoodieWriteConfig(SDKConst.cow_table_name);
+        HoodieWriteConfig config = SDKConst.createCowHoodieWriteConfig(SDKConst.cow_table_name);
 
         HoodieJavaWriteClient client = null;
         RecordParse recordParse = null;

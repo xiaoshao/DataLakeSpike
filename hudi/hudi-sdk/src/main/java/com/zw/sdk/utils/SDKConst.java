@@ -100,9 +100,9 @@ public class SDKConst {
     }
 
 
-    public static HoodieWriteConfig createHoodieWriteConfig(String tableName) {
+    public static HoodieWriteConfig createMorHoodieWriteConfig(String tableName) {
         return HoodieWriteConfig.newBuilder()
-                .withPath(getCowHudiTablePath())
+                .withPath(getMorHudiTablePath())
                 .withSchema(hudi_schema.toString(true))
                 .withParallelism(2, 2)
                 .forTable(tableName)
@@ -111,5 +111,14 @@ public class SDKConst {
                 .build();
     }
 
-
+    public static HoodieWriteConfig createCowHoodieWriteConfig(String tableName) {
+        return HoodieWriteConfig.newBuilder()
+                .withPath(getMorHudiTablePath())
+                .withSchema(hudi_schema.toString(true))
+                .withParallelism(2, 2)
+                .forTable(tableName)
+                .withIndexConfig(HoodieIndexConfig.newBuilder().withIndexType(HoodieIndex.IndexType.INMEMORY).build())
+                .withArchivalConfig(HoodieArchivalConfig.newBuilder().archiveCommitsWith(20, 30).build())
+                .build();
+    }
 }

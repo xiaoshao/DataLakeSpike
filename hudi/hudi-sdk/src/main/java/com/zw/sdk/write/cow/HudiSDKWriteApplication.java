@@ -16,7 +16,7 @@ public class HudiSDKWriteApplication {
 
     public static void main(String[] args) throws IOException {
         SDKConst.initCopyOnWriteHudiTable(new Configuration());
-        HoodieWriteConfig config = SDKConst.createHoodieWriteConfig(SDKConst.cow_table_name);
+        HoodieWriteConfig config = SDKConst.createCowHoodieWriteConfig(SDKConst.cow_table_name);
 
         HoodieJavaWriteClient client = null;
         RecordParse recordParse = null;

@@ -16,7 +16,7 @@ public class HudiSDKWriteApplication {
 
     public static void main(String[] args) throws IOException {
         SDKConst.initMORHudiTable(new Configuration());
-        HoodieWriteConfig config = SDKConst.createHoodieWriteConfig(SDKConst.mor_table_name);
+        HoodieWriteConfig config = SDKConst.createMorHoodieWriteConfig(SDKConst.mor_table_name);
 
         HoodieJavaWriteClient client = null;
         RecordParse recordParse = null;
@@ -33,11 +33,15 @@ public class HudiSDKWriteApplication {
                 next = recordParse.next(1000);
                 startCommitTime = client.startCommit();
             }
+        } catch (Exception ex) {
+            System.out.println(ex);
         } finally {
             if (client != null) {
                 client.close();
             }
-            recordParse.close();
+            if (recordParse != null) {
+                recordParse.close();
+            }
         }
     }
 
